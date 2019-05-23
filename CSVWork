@@ -1,0 +1,120 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+public class CSVFileSorting {
+	public static void main(String args[])
+	{
+		String[] csvFile={"D:/Girish/test1.csv","D:/Girish/test2.csv","D:/Girish/test3.csv"};
+		String line="";
+		String sep=",";
+		BufferedReader br=null;
+		HashMap<Integer, String> nameMap=new HashMap<>();
+		HashMap<Integer, List> wholeMap=new HashMap<>();
+		List finalList=new ArrayList<List>();
+		int flagcount=0;
+		try{
+			for(int i=0;i<csvFile.length;i++)
+			{
+			br=new BufferedReader(new FileReader(csvFile[i]));
+			while((line=br.readLine())!=null)
+			{
+				flagcount++;
+				String[] arr=line.split(sep);
+				List<String> list=Arrays.asList(arr);
+				finalList.add(list);
+				Iterator<String> it=list.iterator();
+				wholeMap.put(flagcount, list);
+				int count=0;
+				String uniqueValue="";
+				while(it.hasNext())
+				{
+					String value=it.next();
+					if(count==1)
+					{
+						uniqueValue=value;
+						
+					}
+					if(count==4)
+					{
+						uniqueValue=uniqueValue+" "+value;
+						nameMap.put(flagcount, uniqueValue);
+					}
+					
+				//	System.out.println(value);
+					count++;
+					
+				}
+			}
+			br.close();
+			}
+			FileWriter write=new FileWriter("D:/Girish/out.csv");
+			
+			List<String> values=new ArrayList<String>(nameMap.values());
+			Collections.sort(values);
+			Iterator valueIterator=values.iterator();
+			while(valueIterator.hasNext())
+			{
+				String sortedValue=(String)valueIterator.next();
+				System.out.println(sortedValue);
+				
+				for(Integer key:nameMap.keySet())
+				{
+					String compareValue=nameMap.get(key);
+					if(compareValue.equals(sortedValue))
+					{
+						
+							List finalList1=wholeMap.get(key);	
+							Iterator<String> it1=finalList1.iterator();
+							while(it1.hasNext())
+							{
+								String value=it1.next();
+								//System.out.println(value+"Last");
+								write.append(value);
+								write.append(",");
+								
+							}
+							write.append("\n");
+						break;
+					}
+				}
+			
+			}
+			write.flush();
+			write.close();
+		/*	Iterator itlist=finalList.iterator();
+			while(itlist.hasNext())
+			{
+				List<String> list1=(List)itlist.next();
+				
+				Iterator<String> it1=list1.iterator();
+				while(it1.hasNext())
+				{
+					String value=it1.next();
+					//System.out.println(value+"Last");
+					write.append(value);
+					write.append(",");
+					
+				}
+				write.append("\n");
+				
+			}
+			write.flush();
+			write.close();*/
+			
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+}

@@ -1,0 +1,32 @@
+import java.util.LinkedList;    
+
+public class Nested_String {
+	
+	public static void main(String[] args) 
+	{ 
+		System.out.println(Checker("{{}}"));
+	}
+    public static boolean  Checker(String LISP_Code) {
+    	
+        LinkedList<Character> ll_stack = new LinkedList<>();
+        
+        for (int i = 0; i< LISP_Code.length();i++){
+        	char l_ch = LISP_Code.charAt(i);
+        	
+        	if(l_ch=='{'){
+        		ll_stack.push(l_ch);
+        	}else {
+                if (ll_stack.isEmpty()) {
+                	return false;
+                }        	
+        	 char p = ll_stack.pop();
+        	 
+        	  if (l_ch == '}' && p != '{') {
+        		  return false;
+              }   
+        	
+        	}
+        }
+        return ll_stack.isEmpty() ? true : false;              	
+    	}
+    }

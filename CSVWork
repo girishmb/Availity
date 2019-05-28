@@ -1,1 +1,211 @@
 
+package com.checker.csv;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+public class CSVFileProcess {
+	
+	static int companyPos=0;
+	static int lastNamePos=0;
+	static int versionPos=0;
+	static int userIdpos=0;
+	public static void main(String args[])
+	{
+		String[] csvFile={"C:/Temp/CodeTest/Checker/input.csv"};
+		String line="";
+		String sep=",";
+		BufferedReader br=null;
+		
+		
+		List<List<String>> arralist=new ArrayList<List<String>>();
+		
+		
+		Set<String> company=new HashSet<>();
+	try
+	{for(int i=0;i<csvFile.length;i++)
+	{
+		
+	br=new BufferedReader(new FileReader(csvFile[i]));
+	line=br.readLine();
+	String[] headers=line.split(sep);
+	for(int pos=0;pos<headers.length;pos++)
+	{
+		if(headers[pos].trim().equals("Insurance Company"))
+		{
+			companyPos=pos;
+		}
+		if(headers[pos].trim().equals("User Id"))
+		{
+			userIdpos=pos;
+		}
+		if(headers[pos].trim().equals("Version"))
+		{
+			versionPos=pos;
+		}
+		if(headers[pos].trim().equals("Last Name"))
+		{
+			lastNamePos=pos;
+		}
+		
+		
+	}
+	//System.out.println(companyPos+" "+lastNamePos+" "+versionPos);
+	while((line=br.readLine())!=null)
+	{		
+		String[] arr=line.split(sep);		
+		List<String> list=Arrays.asList(arr);
+		arralist.add(list);
+		company.add(arr[companyPos]);
+	}
+	Iterator<String> sepCompany=company.iterator();
+	while(sepCompany.hasNext())
+	{
+		HashMap<Integer, List<String>> beforSort=new HashMap<Integer, List<String>>();
+		HashMap<Integer, String> sortHelpMAp=new HashMap<Integer, String>();
+		String companyName=sepCompany.next();
+		Iterator<List<String>> inputList=arralist.iterator();
+		int seqNo=0;
+		while(inputList.hasNext())
+		{
+			seqNo++;
+			
+			
+			List<String> rowInput=inputList.next();
+			String rowInputStr[]=(String[])rowInput.toArray();
+			if(rowInputStr[companyPos].equals(companyName))
+			{
+				String sortintStr=rowInputStr[lastNamePos]+" "+rowInputStr[companyPos]+" "+rowInputStr[versionPos]+" "+rowInputStr[0];
+				beforSort.put(seqNo, rowInput);
+				sortHelpMAp.put(seqNo, sortintStr);
+				
+				
+			}
+		}
+		
+		Sortin(beforSort, sortHelpMAp,companyName,headers);
+	}
+	}
+			
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+	private static void Sortin(HashMap<Integer, List<String>> beforSort,HashMap<Integer, String> sortHelpMAp, String companyName, String[] headers)
+	{
+		try
+		{
+		List<String> values=new ArrayList<String>(sortHelpMAp.values());
+		Collections.sort(values);		
+		Iterator<String> valueIterator=values.iterator();
+		FileWriter write=new FileWriter("C:/Temp/CodeTest/Checker/"+companyName+".csv");
+		HashMap<Integer, List<String>> sortedMap=new HashMap<Integer, List<String>>(); // final sorted map
+		int sortedInt=0;
+		ArrayList<List<String>> SortingList=new ArrayList<List<String>>();//Remove duplicate rows - Only Rows
+		
+		HashMap<String, String> versionSortList=new HashMap<String, String>(); //Remove duplicate versions - USerID and VersionNumber
+		HashMap<String, Integer> removeDublicate=new HashMap<String, Integer>();//Remove lowest version - USerID and row#(Sqno)
+		
+		for(int i=0;i<headers.length;i++)
+		{
+			write.append(headers[i]);
+			write.append(",");
+		}
+		write.append("\n");
+		while(valueIterator.hasNext())
+		{
+			String sortedValue=valueIterator.next();
+			//System.out.println(sortedValue);
+			
+			for(Integer key:sortHelpMAp.keySet())
+			{
+				String compareValue=sortHelpMAp.get(key);
+				if(compareValue.equals(sortedValue)) 
+				{
+					
+						List<String> finalList1=beforSort.get(key);	
+						if(!(SortingList.contains(finalList1))) //Ignoring or removing duplicate rows
+						{
+							String arrUser[]=(String [])finalList1.toArray();
+							String versionvalue=arrUser[versionPos];
+							String userId=arrUser[userIdpos];
+							
+							
+							if(versionSortList.containsKey(userId))
+							
+							{
+								String value=versionSortList.get(userId);
+								float preValue=Float.parseFloat(value);
+								float currValue=Float.parseFloat(versionvalue);
+								if(currValue>preValue)
+								{
+								
+								int sortedIntGet=removeDublicate.get(userId);
+								sortedIntGet=sortedIntGet+1;
+								//System.out.println(sortedIntGet);
+								sortedMap.replace(sortedIntGet, finalList1);
+								versionSortList.put(userId, versionvalue);
+								
+								}
+							
+							}
+							else
+							{
+								//System.out.println("done");
+								versionSortList.put(userId, versionvalue);
+								removeDublicate.put(userId, sortedInt);
+								sortedInt++;
+								sortedMap.put(sortedInt, finalList1);
+								SortingList.add(finalList1);	
+							}					
+						
+						
+					
+					break;
+						}
+						
+				}
+			}
+		
+		}
+		for(Map.Entry<Integer, List<String>> entry: sortedMap.entrySet())
+		{
+			//System.out.println(entry.getKey());
+			List<String> finalList1=entry.getValue();
+			Iterator<String> it2=finalList1.iterator();
+			
+			while(it2.hasNext())
+			{
+			String value=it2.next();
+			//System.out.println(value+"Last");
+			write.append(value);
+			write.append(",");
+			}
+			write.append("\n");
+		}
+		
+		
+		
+		write.flush();
+		write.close();
+	}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+
+}
